@@ -7,7 +7,7 @@
 	<classpathentry kind="lib" path="lib/ant-launcher.jar" sourcepath="lib/ant-src.jar"/>
 	<classpathentry kind="lib" path="lib/testng-6.13.1.jar" sourcepath="lib/testng-6.13.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jcommander-1.30.jar"/>
-	<classpathentry kind="lib" path="lib/guava.jar"/>
+	<classpathentry kind="lib" path="lib/guava-30.1.1-jre.jar"/>
 	<classpathentry kind="lib" path="lib/gson-2.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/ast.jar"/>
 	<classpathentry kind="lib" path="lib/ast-dependencies.jar"/>

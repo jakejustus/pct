@@ -76,7 +76,7 @@
     <pathelement location="${build-java}" />
     <pathelement location="lib/testng-6.13.1.jar" />
     <pathelement location="lib/ini4j-0.5.1.jar" />
-    <pathelement location="lib/guava.jar" />
+    <pathelement location="lib/guava-30.1.1-jre.jar" />
     <pathelement location="lib/mockito-core-3.0.0.jar" />
     <pathelement location="lib/byte-buddy-1.9.14.jar" />
     <pathelement location="lib/byte-buddy-agent-1.9.14.jar" />
@@ -364,7 +364,7 @@
         <include name="ast.jar" />
         <include name="ast-dependencies.jar" />
         <include name="ini4j-0.5.1.jar" />
-        <include name="guava.jar" />
+        <include name="guava-30.1.1-jre.jar" />
         <include name="testng-6.13.1.jar" />
         <include name="jcommander-1.30.jar" />
         <include name="jacocoant-0.8.4.jar" />
