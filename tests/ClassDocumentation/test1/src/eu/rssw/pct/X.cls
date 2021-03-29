@@ -11,8 +11,8 @@ class eu.rssw.pct.X serializable use-widget-pool:
   /* Public property foo2 */
   define protected property foo2 as char get. set.
   define private property foo3 as class eu.rssw.pct.X get. set.
-  define property foo4 as char.
-  define public static property foo5 as char.
+  define property foo4 as char get.
+  define public static property foo5 as char get.
 
   define temp-table tt1 no-undo
     field fld1 as char
@@ -50,7 +50,7 @@ class eu.rssw.pct.X serializable use-widget-pool:
    * Comment for method 2
    * @return void
    */
-  method public void method2() : 
+  method public void method4() :
     /* My second comment */
   end method.
   
