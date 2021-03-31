@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<project name="JsonDocumentation-test1">
+  <taskdef resource="PCT.properties" />
+
+  <target name="test">
+    <mkdir dir="build" />
+    <mkdir dir="doc" />
+
+    <PCTCompile destDir="build" dlcHome="${DLC}">
+      <fileset dir="src" includes="**/*.cls,**/*.p" />
+      <propath>
+        <pathelement location="src" />
+      </propath>
+    </PCTCompile>
+    <ClassDocumentation buildDir="build" destDir="doc" dlcHome="${DLC}" encoding="iso-8859-1">
+      <fileset dir="src" includes="**/*.cls,**/*.p" />
+      <propath>
+        <pathelement location="src" />
+      </propath>
+    </ClassDocumentation>
+  </target>
+
+</project>

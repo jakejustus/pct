@@ -1,0 +1,28 @@
+/**
+ * Documentation
+ * Second line
+ */
+PROCEDURE internalProc1:
+
+END PROCEDURE.
+
+FUNCTION fooBar RETURNS CHARACTER FORWARD.
+
+define temp-table ttFooBar
+field fld1 as char.
+
+/* another procedure */
+PROCEDURE internalProc2:
+  DEFINE INPUT PARAMETER ipPrm1 AS CHARACTER NO-UNDO.
+  DEFINE OUTPUT PARAMETER ipPrm2 AS INTEGER NO-UNDO.
+  DEFINE INPUT-OUTPUT PARAMETER TABLE FOR ttFooBar.
+  
+END PROCEDURE.
+
+PROCEDURE internalProc3 PRIVATE:
+
+END PROCEDURE.
+
+FUNCTION fooBar RETURNS CHARACTER:
+
+END FUNCTION.

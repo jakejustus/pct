@@ -70,6 +70,12 @@
     <pathelement location="lib/jaxb-api-2.3.1.jar" />
     <!-- ABLDuck classes -->
     <pathelement location="lib/commonmark-0.11.0.jar"/>
+  	<pathelement location="lib/database-parser-2.12.1.jar"/>
+    <pathelement location="lib/rcode-reader-2.12.1.jar"/>
+    <pathelement location="lib/openedge-checks-2.12.1.jar"/>
+    <pathelement location="lib/proparse-2.13.0-SNAPSHOT.jar"/>
+    <pathelement location="lib/guava-30.1.1-jre.jar"/>
+    <pathelement location="lib/antlr4-runtime-4.9.2.jar"/>
   </path>
   <path id="pct.test.compil">
     <path refid="pct.compil" />
