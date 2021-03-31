@@ -1,29 +1,23 @@
 <?xml version="1.0"?>
 <project name="ClassDocumentation-test1">
-  <taskdef resource="extras115.properties" />
+  <taskdef resource="PCT.properties" />
 
   <target name="test">
-    <mkdir dir="xml" />
-    <mkdir dir="profiler" />
+    <mkdir dir="build" />
+    <mkdir dir="doc" />
 
-    <ClassDocumentation destDir="doc" dlcHome="${DLC}">
-      <fileset dir="src" includes="**/*.cls" />
+    <PCTCompile destDir="build" dlcHome="${DLC}">
+      <fileset dir="src" includes="**/*.cls,**/*.p" />
+      <propath>
+        <pathelement location="src" />
+      </propath>
+    </PCTCompile>
+    <ClassDocumentation buildDir="build" destDir="doc" dlcHome="${DLC}" encoding="iso-8859-1">
+      <fileset dir="src" includes="**/*.cls,**/*.p" />
       <propath>
         <pathelement location="src" />
       </propath>
     </ClassDocumentation>
-    <ClassDocumentation destDir="doc2" dlcHome="${DLC}">
-      <fileset dir="src" includes="**/*.p" />
-      <propath>
-        <pathelement location="src" />
-      </propath>
-    </ClassDocumentation>
-    <HTMLDocumentation dlcHome="${DLC}" sourceDir="doc" destDir="html">
-      <Profiler enabled="${PROFILER}" coverage="true" outputDir="profiler" />
-    </HTMLDocumentation>
-    <XMLDocumentation dlcHome="${DLC}" sourceDir="doc" destFile="xml/test1.xml">
-      <Profiler enabled="${PROFILER}" coverage="true" outputDir="profiler" />
-    </XMLDocumentation>
   </target>
 
 </project>

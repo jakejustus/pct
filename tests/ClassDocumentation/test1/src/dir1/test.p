@@ -6,7 +6,10 @@ PROCEDURE internalProc1:
 
 END PROCEDURE.
 
-FUNCTION fooBar RETURNS CHARACER FORWARD.
+FUNCTION fooBar RETURNS CHARACTER FORWARD.
+
+define temp-table ttFooBar
+field fld1 as char.
 
 /* another procedure */
 PROCEDURE internalProc2:
