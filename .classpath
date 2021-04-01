@@ -2,7 +2,11 @@
 <classpath>
 	<classpathentry kind="src" output="build/java" path="src/java"/>
 	<classpathentry kind="src" output="build/test" path="src/test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/ant.jar" sourcepath="lib/ant-src.jar"/>
 	<classpathentry kind="lib" path="lib/ant-launcher.jar" sourcepath="lib/ant-src.jar"/>
 	<classpathentry kind="lib" path="lib/testng-6.13.1.jar" sourcepath="lib/testng-6.13.1-sources.jar"/>
@@ -19,5 +23,10 @@
 	<classpathentry kind="lib" path="lib/hamcrest-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/objenesis-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jaxb-api-2.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/rcode-reader-2.12.1.jar"/>
+	<classpathentry kind="lib" path="lib/database-parser-2.12.1.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.30.jar"/>
+	<classpathentry kind="lib" path="lib/openedge-checks-2.12.1.jar"/>
+	<classpathentry kind="lib" path="lib/proparse-2.13.0-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
