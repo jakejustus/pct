@@ -46,6 +46,7 @@ import org.prorefactor.treeparser.symbols.Variable;
 import org.sonar.plugins.openedge.api.objects.DatabaseWrapper;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.io.Files;
 import com.google.gson.stream.JsonWriter;
 import com.phenix.pct.DBConnectionSet;
@@ -76,6 +77,7 @@ public class JsonDocumentation extends PCT {
     private Collection<PCTConnection> dbConnList = null;
     private Collection<DBConnectionSet> dbConnSet = null;
     private boolean indent = false;
+    private CommentStyle style = CommentStyle.JAVADOC;
 
     public JsonDocumentation() {
         super();
@@ -107,6 +109,10 @@ public class JsonDocumentation extends PCT {
 
     public void setIndent(boolean indent) {
         this.indent = indent;
+    }
+
+    public void setStyle(String style) {
+        this.style = CommentStyle.valueOf(style.toUpperCase());
     }
 
     /**
@@ -230,14 +236,14 @@ public class JsonDocumentation extends PCT {
         }
     }
 
-    private static void writeProcedure(String name, JsonWriter ofile, ParseUnit unit)
+    private void writeProcedure(String name, JsonWriter ofile, ParseUnit unit)
             throws IOException {
         ofile.beginObject();
         ofile.name("name").value(name);
         ofile.endObject();
     }
 
-    private static void writeClass(JsonWriter ofile, ITypeInfo info, ParseUnit unit)
+    private void writeClass(JsonWriter ofile, ITypeInfo info, ParseUnit unit)
             throws IOException {
         ofile.beginObject();
         ofile.name("className").value(info.getTypeName());
@@ -292,7 +298,7 @@ public class JsonDocumentation extends PCT {
         ofile.endObject();
     }
 
-    private static void writeMethod(JsonWriter ofile, IMethodElement methd, ParseUnit unit)
+    private void writeMethod(JsonWriter ofile, IMethodElement methd, ParseUnit unit)
             throws IOException {
         ofile.beginObject();
         ofile.name("name").value(methd.getName());
@@ -316,7 +322,7 @@ public class JsonDocumentation extends PCT {
         ofile.endObject();
     }
 
-    private static void writeClassComments(JsonWriter ofile, ITypeInfo info, ParseUnit unit,
+    private void writeClassComments(JsonWriter ofile, ITypeInfo info, ParseUnit unit,
             List<String> comments) throws IOException {
         ofile.name("comments").beginArray();
         for (String str : comments) {
@@ -325,7 +331,7 @@ public class JsonDocumentation extends PCT {
         ofile.endArray();
     }
 
-    private static void writeMethodComments(JsonWriter ofile, IMethodElement info, ParseUnit unit,
+    private void writeMethodComments(JsonWriter ofile, IMethodElement info, ParseUnit unit,
             List<String> comments) throws IOException {
         ofile.name("comments").beginArray();
         for (String str : comments) {
@@ -334,7 +340,7 @@ public class JsonDocumentation extends PCT {
         ofile.endArray();
     }
 
-    private static void writePropertyComments(JsonWriter ofile, IPropertyElement info,
+    private void writePropertyComments(JsonWriter ofile, IPropertyElement info,
             ParseUnit unit, List<String> comments) throws IOException {
         ofile.name("comments").beginArray();
         for (String str : comments) {
@@ -343,7 +349,7 @@ public class JsonDocumentation extends PCT {
         ofile.endArray();
     }
 
-    private static List<String> getJavadoc(ITypeInfo info, ParseUnit unit) {
+    private List<String> getJavadoc(ITypeInfo info, ParseUnit unit) {
         JPNode clsNode = unit.getTopNode().queryStateHead(ABLNodeType.CLASS).stream().findFirst()
                 .orElse(null);
         if (clsNode != null) {
@@ -353,7 +359,7 @@ public class JsonDocumentation extends PCT {
 
     }
 
-    private static List<String> getJavadoc(IMethodElement elem, ParseUnit unit) {
+    private List<String> getJavadoc(IMethodElement elem, ParseUnit unit) {
         Routine r = unit.getRootScope().getRoutineMap().get(elem.getName().toLowerCase());
         if (r == null)
             return new ArrayList<>();
@@ -362,7 +368,7 @@ public class JsonDocumentation extends PCT {
 
     }
 
-    private static List<String> getJavadoc(IPropertyElement elem, ParseUnit unit) {
+    private List<String> getJavadoc(IPropertyElement elem, ParseUnit unit) {
         Variable v = unit.getRootScope().getVariable(elem.getName());
         if (v == null)
             return new ArrayList<>();
@@ -370,7 +376,7 @@ public class JsonDocumentation extends PCT {
             return getJavadoc(v.getDefineNode().getStatement());
     }
 
-    private static List<String> getJavadoc(JPNode stmt) {
+    private List<String> getJavadoc(JPNode stmt) {
         // Read comments before the statement and its annotations
         List<String> comments = new ArrayList<>();
         for (ProToken tok : stmt.getHiddenTokens()) {
@@ -385,7 +391,43 @@ public class JsonDocumentation extends PCT {
             }
             stmt = stmt.getPreviousNode();
         }
-        return comments;
+        
+        return convertJavadoc(comments);
+    }
+
+    private List<String> convertJavadoc(List<String> comments) {
+        List<String> rslt = new ArrayList<>();
+        for (String s : comments) {
+            rslt.addAll(convertJavadoc(s));
+        }
+        return rslt;
+    }
+
+    private List<String> convertJavadoc(String comment) {
+        List<String> rslt = new ArrayList<>();
+        if (checkStartComment(comment.trim())) {
+            for (String s : Splitter.on('\n').split(comment.trim())) {
+                // First line and last line is not supposed to contain anything
+                if (!checkStartComment(s.trim()) && !s.endsWith("*/")) {
+                    // Trim first * 
+                    if (s.trim().startsWith("*"))
+                        rslt.add(s.trim().substring(2).trim());
+                        else rslt.add(s.trim());
+                }
+            }
+        }
+        return rslt;
+    }
+
+    private boolean checkStartComment(String comment) {
+        if (style == CommentStyle.JAVADOC) {
+            return comment.startsWith("/**");
+        } else if (style == CommentStyle.SIMPLE) {
+            return comment.startsWith("/*");
+        } else if (style == CommentStyle.CONSULTINGWERK) {
+            return comment.startsWith("/*-");
+        }
+        return false;
     }
 
     private ITypeInfo parseRCode(File file) {
@@ -457,5 +499,11 @@ public class JsonDocumentation extends PCT {
         run.execute();
 
         return outFile;
+    }
+
+    public enum CommentStyle {
+        JAVADOC, // /**
+        SIMPLE, // /*
+        CONSULTINGWERK, // /*-
     }
 }

@@ -52,6 +52,16 @@ public class JsonDocumentationTest extends BuildFileTestNg {
         } catch (IOException caught) {
             fail("Unable to read out.json", caught);
         }
+
+        File f2 = new File("JsonDocumentation/test1/doc2/out.json");
+        assertTrue(f2.exists());
+        Gson gson2 = new Gson();
+        try (Reader r = new FileReader(f2); JsonReader reader = new JsonReader(r)) {
+            JsonArray array = gson2.fromJson(reader, JsonArray.class);
+            assertEquals(array.size(), 8);
+        } catch (IOException caught) {
+            fail("Unable to read out.json", caught);
+        }
     }
 
     @Test(groups = {"v11"})

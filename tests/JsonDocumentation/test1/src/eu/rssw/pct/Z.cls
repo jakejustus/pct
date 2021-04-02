@@ -8,7 +8,7 @@ class eu.rssw.pct.Z inherits eu.rssw.pct.Y implements eu.rssw.pct.A, eu.rssw.pct
 
   end method.
 
-  /* 
+  /** 
    * My Comment 01
    * Hello world
    */
@@ -16,7 +16,7 @@ class eu.rssw.pct.Z inherits eu.rssw.pct.Y implements eu.rssw.pct.A, eu.rssw.pct
    /* My second comment */
   end method.
   
-  /* 
+  /** 
    * My Comment 02
    * Hello world
    */
