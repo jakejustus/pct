@@ -38,7 +38,7 @@ import com.google.gson.stream.JsonReader;
  */
 public class JsonDocumentationTest extends BuildFileTestNg {
 
-    @Test(groups = {"v11"})
+    @Test(groups = {"v11", "win"})
     public void test1() {
         configureProject("JsonDocumentation/test1/build.xml");
         executeTarget("test");
