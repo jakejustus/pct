@@ -54,4 +54,36 @@ public class JsonDocumentationTest extends BuildFileTestNg {
         }
     }
 
+    @Test(groups = {"v11"})
+    public void test2() {
+        configureProject("JsonDocumentation/test2/build.xml");
+        executeTarget("test");
+
+        File f1 = new File("JsonDocumentation/test2/doc/out.json");
+        assertTrue(f1.exists());
+        Gson gson = new Gson();
+        try (Reader r = new FileReader(f1); JsonReader reader = new JsonReader(r)) {
+            JsonArray array = gson.fromJson(reader, JsonArray.class);
+
+        } catch (IOException caught) {
+            fail("Unable to read out.json", caught);
+        }
+    }
+
+    @Test(groups = {"v11"})
+    public void test3() {
+        configureProject("JsonDocumentation/test3/build.xml");
+        executeTarget("test");
+
+        File f1 = new File("JsonDocumentation/test3/doc/out.json");
+        assertTrue(f1.exists());
+        Gson gson = new Gson();
+        try (Reader r = new FileReader(f1); JsonReader reader = new JsonReader(r)) {
+            JsonArray array = gson.fromJson(reader, JsonArray.class);
+
+        } catch (IOException caught) {
+            fail("Unable to read out.json", caught);
+        }
+    }
+
 }
