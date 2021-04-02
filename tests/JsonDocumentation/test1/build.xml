@@ -12,7 +12,7 @@
         <pathelement location="src" />
       </propath>
     </PCTCompile>
-    <ClassDocumentation buildDir="build" destDir="doc" dlcHome="${DLC}" encoding="iso-8859-1">
+    <ClassDocumentation buildDir="build" destDir="doc" dlcHome="${DLC}" encoding="iso-8859-1" indent="true">
       <fileset dir="src" includes="**/*.cls,**/*.p" />
       <propath>
         <pathelement location="src" />

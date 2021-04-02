@@ -46,6 +46,7 @@ import org.prorefactor.treeparser.symbols.Variable;
 import org.sonar.plugins.openedge.api.objects.DatabaseWrapper;
 
 import com.google.common.base.Joiner;
+import com.google.common.io.Files;
 import com.google.gson.stream.JsonWriter;
 import com.phenix.pct.DBConnectionSet;
 import com.phenix.pct.PCT;
@@ -183,22 +184,15 @@ public class JsonDocumentation extends PCT {
             ppSettings = new ProparseSettings(pp, false);
             session = new RefactorSession(ppSettings, readDBSchema(), Charset.forName(encoding));
 
-            AtomicInteger numClasses = new AtomicInteger(0);
-            AtomicInteger numMethods = new AtomicInteger(0);
-            AtomicInteger numProperties = new AtomicInteger(0);
-
             // Multi-threaded pool
             AtomicInteger numRCode = new AtomicInteger(0);
             ExecutorService service = Executors.newFixedThreadPool(4);
-            com.google.common.io.Files.fileTraverser().depthFirstPreOrder(buildDir).forEach(f -> {
+            Files.fileTraverser().depthFirstPreOrder(buildDir).forEach(f -> {
                 if (f.getName().endsWith(".r")) {
                     numRCode.incrementAndGet();
                     service.submit(() -> {
                         ITypeInfo info = parseRCode(f);
                         if (info != null) {
-                            numClasses.incrementAndGet();
-                            numMethods.addAndGet(info.getMethods().size());
-                            numProperties.addAndGet(info.getProperties().size());
                             session.injectTypeInfo(info);
                         }
                     });
@@ -248,21 +242,19 @@ public class JsonDocumentation extends PCT {
         ofile.beginObject();
         ofile.name("className").value(info.getTypeName());
         ofile.name("inherits").value(info.getParentTypeName());
-        ofile.name("interfaces").beginArray();
-        for (String str : info.getInterfaces()) {
-            ofile.value(str);
-        }
-        ofile.endArray();
-        ofile.name("comments").beginArray();
-        for (String str : getJavadoc(info, unit)) {
-            ofile.value(str);
-        }
-        ofile.endArray();
         ofile.name("abstract").value(info.isAbstract());
         ofile.name("final").value(info.isFinal());
         ofile.name("interface").value(info.isInterface());
         ofile.name("serializable").value(info.isSerializable());
         ofile.name("enum").value(unit.isEnum());
+        ofile.name("interfaces").beginArray();
+        for (String str : info.getInterfaces()) {
+            ofile.value(str);
+        }
+        ofile.endArray();
+
+        List<String> classComments = getJavadoc(info, unit);
+        writeClassComments(ofile, info, unit, classComments);
 
         ofile.name("methods").beginArray();
         for (IMethodElement methd : info.getMethods()) {
@@ -289,57 +281,15 @@ public class JsonDocumentation extends PCT {
         for (IPropertyElement prop : info.getProperties()) {
             ofile.beginObject();
             ofile.name("name").value(prop.getName());
-            ofile.name("comments").beginArray();
-            for (String str : getJavadoc(prop, unit)) {
-                ofile.value(str);
-            }
-            ofile.endArray();
+
+            List<String> propComments = getJavadoc(prop, unit);
+            writePropertyComments(ofile, prop, unit, propComments);
 
             ofile.endObject();
         }
         ofile.endArray();
 
         ofile.endObject();
-    }
-
-    private static List<String> getJavadoc(ITypeInfo info, ParseUnit unit) {
-        List<String> comments = new ArrayList<>();
-        JPNode clsNode = unit.getTopNode().queryStateHead(ABLNodeType.CLASS).stream().findFirst()
-                .orElse(null);
-        if (clsNode != null) {
-            for (ProToken tok : clsNode.getHiddenTokens()) {
-                if (tok.getNodeType() == ABLNodeType.COMMENT)
-                    comments.add(tok.getText());
-            }
-        }
-
-        return comments;
-    }
-
-    private static List<String> getJavadoc(IMethodElement elem, ParseUnit unit) {
-        List<String> comments = new ArrayList<>();
-        Routine r = unit.getRootScope().getRoutineMap().get(elem.getName());
-        if (r != null) {
-            for (ProToken tok : r.getDefineNode().getStatement().getHiddenTokens()) {
-                if (tok.getNodeType() == ABLNodeType.COMMENT)
-                    comments.add(tok.getText());
-            }
-        }
-
-        return comments;
-    }
-
-    private static List<String> getJavadoc(IPropertyElement elem, ParseUnit unit) {
-        List<String> comments = new ArrayList<>();
-        Variable v = unit.getRootScope().getVariable(elem.getName());
-        if (v != null) {
-            for (ProToken tok : v.getDefineNode().getStatement().getHiddenTokens()) {
-                if (tok.getNodeType() == ABLNodeType.COMMENT)
-                    comments.add(tok.getText());
-            }
-        }
-
-        return comments;
     }
 
     private static void writeMethod(JsonWriter ofile, IMethodElement methd, ParseUnit unit)
@@ -352,11 +302,8 @@ public class JsonDocumentation extends PCT {
         ofile.name("modifier").value(
                 methd.isPublic() ? "public" : (methd.isProtected() ? "protected" : "private"));
 
-        ofile.name("comments").beginArray();
-        for (String str : getJavadoc(methd, unit)) {
-            ofile.value(str);
-        }
-        ofile.endArray();
+        List<String> comments = getJavadoc(methd, unit);
+        writeMethodComments(ofile, methd, unit, comments);
 
         ofile.name("parameters").beginArray();
         for (IParameter prm : methd.getParameters()) {
@@ -367,6 +314,78 @@ public class JsonDocumentation extends PCT {
         }
         ofile.endArray();
         ofile.endObject();
+    }
+
+    private static void writeClassComments(JsonWriter ofile, ITypeInfo info, ParseUnit unit,
+            List<String> comments) throws IOException {
+        ofile.name("comments").beginArray();
+        for (String str : comments) {
+            ofile.value(str);
+        }
+        ofile.endArray();
+    }
+
+    private static void writeMethodComments(JsonWriter ofile, IMethodElement info, ParseUnit unit,
+            List<String> comments) throws IOException {
+        ofile.name("comments").beginArray();
+        for (String str : comments) {
+            ofile.value(str);
+        }
+        ofile.endArray();
+    }
+
+    private static void writePropertyComments(JsonWriter ofile, IPropertyElement info,
+            ParseUnit unit, List<String> comments) throws IOException {
+        ofile.name("comments").beginArray();
+        for (String str : comments) {
+            ofile.value(str);
+        }
+        ofile.endArray();
+    }
+
+    private static List<String> getJavadoc(ITypeInfo info, ParseUnit unit) {
+        JPNode clsNode = unit.getTopNode().queryStateHead(ABLNodeType.CLASS).stream().findFirst()
+                .orElse(null);
+        if (clsNode != null) {
+            return getJavadoc(clsNode);
+        } else
+            return new ArrayList<>();
+
+    }
+
+    private static List<String> getJavadoc(IMethodElement elem, ParseUnit unit) {
+        Routine r = unit.getRootScope().getRoutineMap().get(elem.getName().toLowerCase());
+        if (r == null)
+            return new ArrayList<>();
+        else
+            return getJavadoc(r.getDefineNode().getStatement());
+
+    }
+
+    private static List<String> getJavadoc(IPropertyElement elem, ParseUnit unit) {
+        Variable v = unit.getRootScope().getVariable(elem.getName());
+        if (v == null)
+            return new ArrayList<>();
+        else
+            return getJavadoc(v.getDefineNode().getStatement());
+    }
+
+    private static List<String> getJavadoc(JPNode stmt) {
+        // Read comments before the statement and its annotations
+        List<String> comments = new ArrayList<>();
+        for (ProToken tok : stmt.getHiddenTokens()) {
+            if (tok.getNodeType() == ABLNodeType.COMMENT)
+                comments.add(tok.getText());
+        }
+        stmt = stmt.getPreviousNode();
+        while (stmt.getNodeType() == ABLNodeType.ANNOTATION) {
+            for (ProToken tok : stmt.getHiddenTokens()) {
+                if (tok.getNodeType() == ABLNodeType.COMMENT)
+                    comments.add(tok.getText());
+            }
+            stmt = stmt.getPreviousNode();
+        }
+        return comments;
     }
 
     private ITypeInfo parseRCode(File file) {
