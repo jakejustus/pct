@@ -66,4 +66,12 @@ public class PCTDynamicRunTest extends BuildFileTestNg {
         rexp.add("Output val1val2");
         expectLogRegexp("test1", rexp, true);
     }
+    
+    @Test(groups = {"v11"})
+    public void test4() {
+        configureProject("PCTDynamicRun/test4/build.xml");
+        executeTarget("init");
+        expectLog("test", "Output val1 val2");
+    }
+
 }

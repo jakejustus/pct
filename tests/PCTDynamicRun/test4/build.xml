@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<project name="PCTDynamicRun-test2">
+	<taskdef resource="PCT.properties" />
+
+	<target name="init">
+		<mkdir dir="db" />
+		<sports2000 destDir="db" dbName="sp2k" dlcHome="${DLC}" />
+	</target>
+
+	<target name="test">
+		<echo file="db/db.pf">
+		# -i : no-integrity - makes schema-load extremely quick, ERR in PCT 217
+		#      -i raises contidion (512)
+		#      -r raises condition (515)
+		-i
+		</echo>
+
+		<PCTDynRun procedure="test.p" dlcHome="${DLC}">
+			<!-- There should be an option on PCTRun to control the undothrow status -->
+			<!-- Main issue with this flag: it changes behavior of customer code and may cause un-expected behavior -->
+			<!-- 
+			<Option name="-undothrow" value="2" />
+             -->
+			<dbconnection dbName="sp2k"
+			              dbDir="db"
+			              singleUser="true"
+			              paramFile="db/db.pf">
+				<alias name="alias1" />
+			</dbconnection>
+			<Parameter name="prm1" value="val1" />
+			<Parameter name="prm2" value="val2" />
+			<OutputParameter name="dynrun2" />
+			<Profiler enabled="${PROFILER}"
+			          coverage="true"
+			          outputDir="profiler" />
+		</PCTDynRun>
+		<echo message="Output ${dynrun2}" />
+	</target>
+
+</project>

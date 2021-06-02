@@ -6,6 +6,7 @@
   <property name="DLC" value="${env.DLC}" />
   <property name="PROFILER" value="false" />
   <property name="TESTLIBS" value="${basedir}/lib" />
+  <property name="TESTENV" value="local" />
 
   <!-- Only used for OE version number -->
   <taskdef resource="PCT.properties" />
@@ -72,7 +73,7 @@
       <testng workingDir="testbox" outputdir="test-output" useDefaultListeners="true" groups="${GROUPS}" excludedGroups="${EXCLUDES-OS},${EXCLUDES-VERSION}" suiteName="${TESTENV} tests">
         <classfileset dir="build/test" includes="**/*Test.class" excludes="**/*BrokerTest.class" />
         <classpath refid="test.run.cp" />
-        <jvmarg line="-DDLC=&quot;${DLC}&quot; -DPROFILER=${PROFILER} -DTESTLIBS=${TESTLIBS} -DVERSION=${VERSION}" />
+        <jvmarg line="-DDLC=&quot;${DLC}&quot; -DPROFILER=${PROFILER} -DTESTLIBS=${TESTLIBS} -DVERSION=${VERSION}"  />
       </testng>
     </jacoco:coverage>
   </target>
