@@ -253,6 +253,7 @@ public class JsonDocumentation extends PCT {
         ofile.name("interface").value(info.isInterface());
         ofile.name("serializable").value(info.isSerializable());
         ofile.name("enum").value(unit.isEnum());
+        
         ofile.name("interfaces").beginArray();
         for (String str : info.getInterfaces()) {
             ofile.value(str);
@@ -360,12 +361,19 @@ public class JsonDocumentation extends PCT {
     }
 
     private List<String> getJavadoc(IMethodElement elem, ParseUnit unit) {
-        Routine r = unit.getRootScope().getRoutineMap().get(elem.getName().toLowerCase());
-        if (r == null)
+        List<Routine> list = unit.getRootScope().lookupRoutines(elem.getName());
+        if (list.isEmpty()) {
             return new ArrayList<>();
-        else
-            return getJavadoc(r.getDefineNode().getStatement());
-
+        } else if (list.size() == 1) {
+            return getJavadoc(list.get(0).getDefineNode().getStatement());
+        } else {
+            String sig = elem.getSignature();
+            for (Routine r : list) {
+                if (r.getSignature().equalsIgnoreCase(sig))
+                    return getJavadoc(r.getDefineNode().getStatement());
+            }
+            return new ArrayList<>();
+        }
     }
 
     private List<String> getJavadoc(IPropertyElement elem, ParseUnit unit) {

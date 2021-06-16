@@ -23,10 +23,10 @@
 	<classpathentry kind="lib" path="lib/hamcrest-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/objenesis-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jaxb-api-2.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/rcode-reader-2.12.1.jar"/>
+	<classpathentry kind="lib" path="lib/rcode-reader-2.14.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/database-parser-2.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.30.jar"/>
 	<classpathentry kind="lib" path="lib/openedge-checks-2.12.1.jar"/>
-	<classpathentry kind="lib" path="lib/proparse-2.13.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/proparse-2.14.0-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
