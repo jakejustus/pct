@@ -194,11 +194,13 @@ public class JsonDocumentation extends PCT {
             AtomicInteger numRCode = new AtomicInteger(0);
             ExecutorService service = Executors.newFixedThreadPool(4);
             Files.fileTraverser().depthFirstPreOrder(buildDir).forEach(f -> {
+                log("File found: " + f.getAbsolutePath(), Project.MSG_INFO);
                 if (f.getName().endsWith(".r")) {
                     numRCode.incrementAndGet();
                     service.submit(() -> {
                         ITypeInfo info = parseRCode(f);
                         if (info != null) {
+                            log("TypeInfo found: " + info.getTypeName(), Project.MSG_INFO);
                             session.injectTypeInfo(info);
                         }
                     });
@@ -220,13 +222,15 @@ public class JsonDocumentation extends PCT {
                 String[] dsfiles = fs.getDirectoryScanner(this.getProject()).getIncludedFiles();
                 for (int i = 0; i < dsfiles.length; i++) {
                     File file = new File(fs.getDir(this.getProject()), dsfiles[i]);
-                    log("ProParse: " + dsfiles[i], Project.MSG_DEBUG);
+                    log("ProParse: " + dsfiles[i], Project.MSG_INFO);
                     ParseUnit unit = new ParseUnit(file, dsfiles[i], session);
                     unit.treeParser01();
 
-                    if (session.getTypeInfo(unit.getClassName()) != null)
+                    log("Classname " + unit.getClassName(), Project.MSG_INFO);
+                    if (session.getTypeInfo(unit.getClassName()) != null) {
+                        log("TypeInfo : " + session.getTypeInfo(unit.getClassName()));
                         writeClass(writer, session.getTypeInfo(unit.getClassName()), unit);
-                    else
+                    }                    else
                         writeProcedure(dsfiles[i], writer, unit);
                 }
             }
