@@ -253,7 +253,12 @@ public class JsonDocumentation extends PCT {
         ofile.name("interface").value(info.isInterface());
         ofile.name("serializable").value(info.isSerializable());
         ofile.name("enum").value(unit.isEnum());
-        
+        boolean useWidgetPool = false;
+        List<JPNode> lst = unit.getTopNode().queryStateHead(ABLNodeType.CLASS);
+        if (!lst.isEmpty()) {
+            useWidgetPool = !lst.get(0).queryCurrentStatement(ABLNodeType.USEWIDGETPOOL).isEmpty();
+        }
+        ofile.name("useWidgetPool").value(useWidgetPool);
         ofile.name("interfaces").beginArray();
         for (String str : info.getInterfaces()) {
             ofile.value(str);
@@ -315,6 +320,7 @@ public class JsonDocumentation extends PCT {
         ofile.name("parameters").beginArray();
         for (IParameter prm : methd.getParameters()) {
             ofile.beginObject();
+            ofile.name("name").value(prm.getName());
             ofile.name("modifier").value(prm.getMode().toString());
             ofile.name("type").value(prm.getDataType());
             ofile.endObject();

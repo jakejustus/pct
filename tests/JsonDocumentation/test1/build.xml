@@ -19,7 +19,7 @@
         <pathelement location="src" />
       </propath>
     </ClassDocumentation>
-    <ClassDocumentation buildDir="build" destDir="doc" dlcHome="${DLC}" encoding="iso-8859-1" indent="true" style="consultingwerk">
+    <ClassDocumentation buildDir="build" destDir="doc2" dlcHome="${DLC}" encoding="iso-8859-1" indent="true" style="consultingwerk">
       <fileset dir="src" includes="**/*.cls,**/*.p" />
       <propath>
         <pathelement location="src" />
