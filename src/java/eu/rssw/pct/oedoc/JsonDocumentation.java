@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.tools.ant.BuildException;
@@ -37,6 +38,7 @@ import org.prorefactor.core.ABLNodeType;
 import org.prorefactor.core.JPNode;
 import org.prorefactor.core.ProToken;
 import org.prorefactor.core.schema.IDatabase;
+import org.prorefactor.core.schema.ISchema;
 import org.prorefactor.core.schema.Schema;
 import org.prorefactor.refactor.RefactorSession;
 import org.prorefactor.refactor.settings.ProparseSettings;
@@ -182,33 +184,38 @@ public class JsonDocumentation extends PCT {
             throw new BuildException("At least one fileset should be defined");
         }
 
-        ProparseSettings ppSettings;
-        RefactorSession session;
+        ISchema sch = null;
         try {
-            String pp = Joiner.on(',').join(propath.list());
-            log("Using PROPATH: " + pp, Project.MSG_INFO);
-            ppSettings = new ProparseSettings(pp, false);
-            session = new RefactorSession(ppSettings, readDBSchema(), Charset.forName(encoding));
-
-            // Multi-threaded pool
-            AtomicInteger numRCode = new AtomicInteger(0);
-            ExecutorService service = Executors.newFixedThreadPool(4);
-            Files.fileTraverser().depthFirstPreOrder(buildDir).forEach(f -> {
-                log("File found: " + f.getAbsolutePath(), Project.MSG_INFO);
-                if (f.getName().endsWith(".r")) {
-                    numRCode.incrementAndGet();
-                    service.submit(() -> {
-                        ITypeInfo info = parseRCode(f);
-                        if (info != null) {
-                            log("TypeInfo found: " + info.getTypeName(), Project.MSG_INFO);
-                            session.injectTypeInfo(info);
-                        }
-                    });
-                }
-            });
-            service.shutdown();
+            sch = readDBSchema();
         } catch (IOException caught) {
             throw new BuildException(caught);
+        }
+        String pp = Joiner.on(',').join(propath.list());
+        log("Using PROPATH: " + pp, Project.MSG_INFO);
+        ProparseSettings ppSettings= new ProparseSettings(pp, false);
+        RefactorSession session = new RefactorSession(ppSettings, sch, Charset.forName(encoding));
+
+        // Multi-threaded pool
+        AtomicInteger numRCode = new AtomicInteger(0);
+        ExecutorService service = Executors.newFixedThreadPool(4);
+        Files.fileTraverser().depthFirstPreOrder(buildDir).forEach(f -> {
+            log("File found: " + f.getAbsolutePath(), Project.MSG_INFO);
+            if (f.getName().endsWith(".r")) {
+                numRCode.incrementAndGet();
+                service.submit(() -> {
+                    ITypeInfo info = parseRCode(f);
+                    if (info != null) {
+                        log("TypeInfo found: " + info.getTypeName(), Project.MSG_INFO);
+                        session.injectTypeInfo(info);
+                    }
+                });
+            }
+        });
+        service.shutdown();
+        try {
+            service.awaitTermination(10, TimeUnit.MINUTES);
+        } catch (InterruptedException caught) {
+            Thread.currentThread().interrupt();
         }
 
         File outFile = new File(destDir, "out.json");
