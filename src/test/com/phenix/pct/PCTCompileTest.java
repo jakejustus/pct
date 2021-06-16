@@ -553,23 +553,23 @@ public class PCTCompileTest extends BuildFileTestNg {
 
         File crc = new File(BASEDIR + "test35/build/.pct/test.p.crc");
         assertTrue(crc.exists());
-        String line = Files.readFirstLine(crc, Charset.defaultCharset());
+        String line = Files.asCharSource(crc, Charset.defaultCharset()).readFirstLine();
         assertTrue(line.startsWith("\"sports2000.Item\""));
         File inc = new File(BASEDIR + "test35/build/.pct/test.p.inc");
         assertTrue(inc.exists());
 
         LineProcessor<Boolean> lineProcessor = new Test35LineProcessor();
-        Files.readLines(inc, Charset.defaultCharset(), lineProcessor);
+        Files.asCharSource(inc, Charset.defaultCharset()).readLines(lineProcessor);
         assertTrue(lineProcessor.getResult());
 
         File crc2 = new File(BASEDIR + "test35/build2/.pct/test.p.crc");
         assertTrue(crc2.exists());
-        String line2 = Files.readFirstLine(crc2, Charset.defaultCharset());
+        String line2 = Files.asCharSource(crc2, Charset.defaultCharset()).readFirstLine();
         assertTrue(line2.startsWith("\"sports2000.Item\""));
         File inc2 = new File(BASEDIR + "test35/build2/.pct/test.p.inc");
         assertTrue(inc2.exists());
         LineProcessor<Boolean> lineProcessor2 = new Test35LineProcessor();
-        Files.readLines(inc2, Charset.defaultCharset(), lineProcessor2);
+        Files.asCharSource(inc2, Charset.defaultCharset()).readLines(lineProcessor2);
         assertTrue(lineProcessor2.getResult());
     }
 
@@ -1390,7 +1390,8 @@ public class PCTCompileTest extends BuildFileTestNg {
         assertTrue(f3.exists());
 
         try {
-            assertTrue(Files.readLines(f3, Charset.defaultCharset(), new Test80LineProcessor()));
+            assertTrue(Files.asCharSource(f3, Charset.defaultCharset())
+                    .readLines(new Test80LineProcessor()));
         } catch (IOException caught) {
             fail("Unable to read file", caught);
         }
@@ -1574,28 +1575,32 @@ public class PCTCompileTest extends BuildFileTestNg {
 
         LineProcessor<Integer> proc = new Test86LineProcessor();
         try {
-            Files.readLines(new File(dir, ".pct/eu/rssw/pct/Y.cls.hierarchy"), Charset.defaultCharset(), proc);
+            Files.asCharSource(new File(dir, ".pct/eu/rssw/pct/Y.cls.hierarchy"),
+                    Charset.defaultCharset()).readLines(proc);
         } catch (IOException caught) {
             fail("Unable to read file", caught);
         }
         assertEquals(proc.getResult(), Integer.valueOf(1));
         LineProcessor<Integer> proc2 = new Test86LineProcessor();
         try {
-            Files.readLines(new File(dir, ".pct/eu/rssw/pct/Z.cls.hierarchy"), Charset.defaultCharset(), proc2);
+            Files.asCharSource(new File(dir, ".pct/eu/rssw/pct/Z.cls.hierarchy"),
+                    Charset.defaultCharset()).readLines(proc2);
         } catch (IOException caught) {
             fail("Unable to read file", caught);
         }
         assertEquals(proc2.getResult(), Integer.valueOf(4));
         LineProcessor<Integer> proc3 = new Test86LineProcessor();
         try {
-            Files.readLines(new File(dir, ".pct/eu/rssw/pct/M.cls.hierarchy"), Charset.defaultCharset(), proc3);
+            Files.asCharSource(new File(dir, ".pct/eu/rssw/pct/M.cls.hierarchy"),
+                    Charset.defaultCharset()).readLines(proc3);
         } catch (IOException caught) {
             fail("Unable to read file", caught);
         }
         assertEquals(proc3.getResult(), Integer.valueOf(1));
         LineProcessor<Integer> proc4 = new Test86LineProcessor();
         try {
-            Files.readLines(new File(dir, ".pct/eu/rssw/pct/proc.p.hierarchy"), Charset.defaultCharset(), proc4);
+            Files.asCharSource(new File(dir, ".pct/eu/rssw/pct/proc.p.hierarchy"),
+                    Charset.defaultCharset()).readLines(proc4);
         } catch (IOException caught) {
             fail("Unable to read file", caught);
         }
