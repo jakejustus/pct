@@ -71,9 +71,9 @@
     <!-- ABLDuck classes -->
     <pathelement location="lib/commonmark-0.11.0.jar"/>
   	<pathelement location="lib/database-parser-2.12.1.jar"/>
-    <pathelement location="lib/rcode-reader-2.12.1.jar"/>
+    <pathelement location="lib/rcode-reader-2.14.0-SNAPSHOT.jar"/>
     <pathelement location="lib/openedge-checks-2.12.1.jar"/>
-    <pathelement location="lib/proparse-2.13.0-SNAPSHOT.jar"/>
+    <pathelement location="lib/proparse-2.14.0-SNAPSHOT.jar"/>
     <pathelement location="lib/guava-30.1.1-jre.jar"/>
     <pathelement location="lib/antlr4-runtime-4.9.2.jar"/>
   </path>
@@ -288,8 +288,8 @@
       <zipfileset src="lib/jaxb-impl-2.3.2.jar" />
       <zipfileset src="lib/guava-30.1.1-jre.jar" />
       <zipfileset src="lib/antlr4-runtime-4.9.2.jar" />
-      <zipfileset src="lib/proparse-2.13.0-SNAPSHOT.jar" />
-      <zipfileset src="lib/rcode-reader-2.12.1.jar" />
+      <zipfileset src="lib/proparse-2.14.0-SNAPSHOT.jar" />
+      <zipfileset src="lib/rcode-reader-2.14.0-SNAPSHOT.jar" />
       <zipfileset src="lib/database-parser-2.12.1.jar" />
       <zipfileset src="lib/openedge-checks-2.12.1.jar" />
       <zipfileset src="lib/slf4j-api-1.7.30.jar" />
