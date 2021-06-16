@@ -425,7 +425,7 @@ public class JsonDocumentation extends PCT {
                 if (!checkStartComment(s.trim()) && !s.endsWith("*/")) {
                     // Trim first * 
                     if (s.trim().startsWith("*"))
-                        rslt.add(s.trim().substring(2).trim());
+                        rslt.add(s.trim().substring(1).trim());
                         else rslt.add(s.trim());
                 }
             }

@@ -29,6 +29,7 @@ import org.testng.annotations.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 
 /**
@@ -74,7 +75,10 @@ public class JsonDocumentationTest extends BuildFileTestNg {
         Gson gson = new Gson();
         try (Reader r = new FileReader(f1); JsonReader reader = new JsonReader(r)) {
             JsonArray array = gson.fromJson(reader, JsonArray.class);
-
+            assertEquals(array.size(), 3);
+            JsonObject firstObj = gson.fromJson(array.get(0), JsonObject.class);
+            assertEquals(firstObj.get("className").getAsString(), "base.class");
+            assertEquals(firstObj.getAsJsonArray("comments").size(), 16);
         } catch (IOException caught) {
             fail("Unable to read out.json", caught);
         }
@@ -90,7 +94,7 @@ public class JsonDocumentationTest extends BuildFileTestNg {
         Gson gson = new Gson();
         try (Reader r = new FileReader(f1); JsonReader reader = new JsonReader(r)) {
             JsonArray array = gson.fromJson(reader, JsonArray.class);
-
+            assertEquals(array.size(), 12);
         } catch (IOException caught) {
             fail("Unable to read out.json", caught);
         }
