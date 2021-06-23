@@ -322,6 +322,7 @@ public class JsonDocumentation extends PCT {
         ofile.name("returnType").value(methd.getReturnTypeName());
         ofile.name("abstract").value(methd.isAbstract());
         ofile.name("static").value(methd.isStatic());
+        ofile.name("extent").value(methd.getExtent());
         ofile.name("modifier").value(
                 methd.isPublic() ? "public" : (methd.isProtected() ? "protected" : "private"));
 
@@ -332,8 +333,22 @@ public class JsonDocumentation extends PCT {
         for (IParameter prm : methd.getParameters()) {
             ofile.beginObject();
             ofile.name("name").value(prm.getName());
+            ofile.name("extent").value(prm.getExtent());
             ofile.name("modifier").value(prm.getMode().toString());
-            ofile.name("type").value(prm.getDataType());
+            switch (prm.getParameterType()) {
+                case TABLE :
+                case BUFFER_TEMP_TABLE :
+                    ofile.name("type").value("TABLE");
+                    break;
+                case DATASET :
+                    ofile.name("type").value("DATASET");
+                    break;
+                case BROWSE :
+                    ofile.name("type").value("BROWSE");
+                    break;
+                default :
+                    ofile.name("type").value(prm.getDataType());
+            }
             ofile.endObject();
         }
         ofile.endArray();
