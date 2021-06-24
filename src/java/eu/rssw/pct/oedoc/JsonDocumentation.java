@@ -199,7 +199,7 @@ public class JsonDocumentation extends PCT {
         AtomicInteger numRCode = new AtomicInteger(0);
         ExecutorService service = Executors.newFixedThreadPool(4);
         Files.fileTraverser().depthFirstPreOrder(buildDir).forEach(f -> {
-            log("File found: " + f.getAbsolutePath(), Project.MSG_INFO);
+            // log("File found: " + f.getAbsolutePath(), Project.MSG_INFO);
             if (f.getName().endsWith(".r")) {
                 numRCode.incrementAndGet();
                 service.submit(() -> {
@@ -229,11 +229,11 @@ public class JsonDocumentation extends PCT {
                 String[] dsfiles = fs.getDirectoryScanner(this.getProject()).getIncludedFiles();
                 for (int i = 0; i < dsfiles.length; i++) {
                     File file = new File(fs.getDir(this.getProject()), dsfiles[i]);
-                    log("ProParse: " + dsfiles[i], Project.MSG_INFO);
+                    // log("ProParse: " + dsfiles[i], Project.MSG_INFO);
                     ParseUnit unit = new ParseUnit(file, dsfiles[i], session);
                     unit.treeParser01();
 
-                    log("Classname " + unit.getClassName(), Project.MSG_INFO);
+                    // log("Classname " + unit.getClassName(), Project.MSG_INFO);
                     if (session.getTypeInfo(unit.getClassName()) != null) {
                         log("TypeInfo : " + session.getTypeInfo(unit.getClassName()));
                         writeClass(writer, session.getTypeInfo(unit.getClassName()), unit);
@@ -526,10 +526,11 @@ public class JsonDocumentation extends PCT {
     private File dumpSchema(PCTConnection conn) {
         File outFile = null;
         try {
-            File.createTempFile("jsondocsch", ".df");
+            outFile = File.createTempFile("jsondocsch", ".df");
         } catch (IOException caught) {
             throw new BuildException(caught);
         }
+        log("Dump file :" + outFile.getAbsolutePath());
         PCTDumpSchema run = new PCTDumpSchema();
         run.bindToOwner(this);
         run.setDlcHome(getDlcHome());
