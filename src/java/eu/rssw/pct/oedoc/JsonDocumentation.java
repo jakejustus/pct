@@ -60,6 +60,8 @@ import com.phenix.pct.PCTDumpSchema;
 import eu.rssw.antlr.database.DumpFileUtils;
 import eu.rssw.pct.RCodeInfo;
 import eu.rssw.pct.RCodeInfo.InvalidRCodeException;
+import eu.rssw.pct.elements.DataType;
+import eu.rssw.pct.elements.IAccessibleElement;
 import eu.rssw.pct.elements.IMethodElement;
 import eu.rssw.pct.elements.IParameter;
 import eu.rssw.pct.elements.IPropertyElement;
@@ -71,7 +73,7 @@ import eu.rssw.pct.elements.ITypeInfo;
  * @author <a href="mailto:g.querret+PCT@gmail.com">Gilles QUERRET </a>
  */
 public class JsonDocumentation extends PCT {
-    private File destDir = null;
+    private File destFile = null;
     private File buildDir = null;
     private String encoding = null;
     private List<FileSet> filesets = new ArrayList<>();
@@ -80,6 +82,7 @@ public class JsonDocumentation extends PCT {
     private Collection<DBConnectionSet> dbConnSet = null;
     private boolean indent = false;
     private CommentStyle style = CommentStyle.JAVADOC;
+    private int numThreads = 1;
 
     public JsonDocumentation() {
         super();
@@ -87,9 +90,7 @@ public class JsonDocumentation extends PCT {
     }
 
     /**
-     * Adds a set of files to archive.
-     * 
-     * @param set FileSet
+     * Adds a set of files to analyze
      */
     public void addFileset(FileSet set) {
         filesets.add(set);
@@ -105,32 +106,37 @@ public class JsonDocumentation extends PCT {
     /**
      * Destination directory
      */
-    public void setDestDir(File dir) {
-        this.destDir = dir;
+    public void setDestFile(File file) {
+        this.destFile = file;
     }
 
+    /**
+     * Number of concurrent threads when reading rcode
+     */
+    public void setNumThreads(int numThreads) {
+        if (numThreads <= 0)
+            throw new BuildException("numThreads attribute should be greater or equal than 1");
+        this.numThreads = numThreads;
+    }
+
+    /**
+     * Specify if JSON files should be indented or on a single line
+     */
     public void setIndent(boolean indent) {
         this.indent = indent;
     }
 
+    /**
+     * Comment style: JAVADOC (slash star star), SIMPLE (slash star), CONSULTINGWERK
+     */
     public void setStyle(String style) {
         this.style = CommentStyle.valueOf(style.toUpperCase());
     }
 
-    /**
-     * Codepage to use when reading files
-     * 
-     * @param encoding String
-     */
     public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
 
-    /**
-     * Set the propath to be used when parsing source code
-     * 
-     * @param propath an Ant Path object containing the propath
-     */
     public void addPropath(Path propath) {
         createPropath().append(propath);
     }
@@ -172,10 +178,10 @@ public class JsonDocumentation extends PCT {
         checkDlcHome();
 
         // Destination directory must exist
-        if (this.destDir == null) {
+        if (this.destFile == null) {
             throw new BuildException("destDir attribute is not set");
         }
-        if (!createDir(destDir)) {
+        if (!createDir(destFile.getParentFile())) {
             throw new BuildException("Unable to create destination directory");
         }
 
@@ -186,26 +192,26 @@ public class JsonDocumentation extends PCT {
 
         ISchema sch = null;
         try {
+            log("JsonDocumentation - Generating schema", Project.MSG_INFO);
             sch = readDBSchema();
         } catch (IOException caught) {
             throw new BuildException(caught);
         }
         String pp = Joiner.on(',').join(propath.list());
         log("Using PROPATH: " + pp, Project.MSG_INFO);
-        ProparseSettings ppSettings= new ProparseSettings(pp, false);
+        ProparseSettings ppSettings = new ProparseSettings(pp, false);
         RefactorSession session = new RefactorSession(ppSettings, sch, Charset.forName(encoding));
 
         // Multi-threaded pool
         AtomicInteger numRCode = new AtomicInteger(0);
-        ExecutorService service = Executors.newFixedThreadPool(4);
+        ExecutorService service = Executors.newFixedThreadPool(numThreads);
         Files.fileTraverser().depthFirstPreOrder(buildDir).forEach(f -> {
-            // log("File found: " + f.getAbsolutePath(), Project.MSG_INFO);
             if (f.getName().endsWith(".r")) {
                 numRCode.incrementAndGet();
                 service.submit(() -> {
                     ITypeInfo info = parseRCode(f);
                     if (info != null) {
-                        log("TypeInfo found: " + info.getTypeName(), Project.MSG_INFO);
+                        log("TypeInfo found: " + info.getTypeName(), Project.MSG_DEBUG);
                         session.injectTypeInfo(info);
                     }
                 });
@@ -218,9 +224,8 @@ public class JsonDocumentation extends PCT {
             Thread.currentThread().interrupt();
         }
 
-        File outFile = new File(destDir, "out.json");
-        log("Generating JSON documentation in " + outFile.getAbsolutePath(), Project.MSG_INFO);
-        try (Writer fw = new FileWriter(outFile); JsonWriter writer = new JsonWriter(fw)) {
+        log("Generating JSON documentation in " + destFile.getAbsolutePath(), Project.MSG_INFO);
+        try (Writer fw = new FileWriter(destFile); JsonWriter writer = new JsonWriter(fw)) {
             if (indent)
                 writer.setIndent("  ");
             writer.beginArray();
@@ -229,16 +234,14 @@ public class JsonDocumentation extends PCT {
                 String[] dsfiles = fs.getDirectoryScanner(this.getProject()).getIncludedFiles();
                 for (int i = 0; i < dsfiles.length; i++) {
                     File file = new File(fs.getDir(this.getProject()), dsfiles[i]);
-                    // log("ProParse: " + dsfiles[i], Project.MSG_INFO);
+                    log("ProParse: " + dsfiles[i], Project.MSG_DEBUG);
                     ParseUnit unit = new ParseUnit(file, dsfiles[i], session);
                     unit.treeParser01();
-
-                    // log("Classname " + unit.getClassName(), Project.MSG_INFO);
                     if (session.getTypeInfo(unit.getClassName()) != null) {
-                        log("TypeInfo : " + session.getTypeInfo(unit.getClassName()));
                         writeClass(writer, session.getTypeInfo(unit.getClassName()), unit);
-                    }                    else
+                    } else {
                         writeProcedure(dsfiles[i], writer, unit);
+                    }
                 }
             }
             writer.endArray();
@@ -247,15 +250,13 @@ public class JsonDocumentation extends PCT {
         }
     }
 
-    private void writeProcedure(String name, JsonWriter ofile, ParseUnit unit)
-            throws IOException {
+    private void writeProcedure(String name, JsonWriter ofile, ParseUnit unit) throws IOException {
         ofile.beginObject();
         ofile.name("name").value(name);
         ofile.endObject();
     }
 
-    private void writeClass(JsonWriter ofile, ITypeInfo info, ParseUnit unit)
-            throws IOException {
+    private void writeClass(JsonWriter ofile, ITypeInfo info, ParseUnit unit) throws IOException {
         ofile.beginObject();
         ofile.name("className").value(info.getTypeName());
         ofile.name("inherits").value(info.getParentTypeName());
@@ -277,7 +278,7 @@ public class JsonDocumentation extends PCT {
         ofile.endArray();
 
         List<String> classComments = getJavadoc(info, unit);
-        writeClassComments(ofile, info, unit, classComments);
+        writeComments(ofile, classComments);
 
         ofile.name("methods").beginArray();
         for (IMethodElement methd : info.getMethods()) {
@@ -304,10 +305,8 @@ public class JsonDocumentation extends PCT {
         for (IPropertyElement prop : info.getProperties()) {
             ofile.beginObject();
             ofile.name("name").value(prop.getName());
-
             List<String> propComments = getJavadoc(prop, unit);
-            writePropertyComments(ofile, prop, unit, propComments);
-
+            writeComments(ofile, propComments);
             ofile.endObject();
         }
         ofile.endArray();
@@ -323,11 +322,10 @@ public class JsonDocumentation extends PCT {
         ofile.name("abstract").value(methd.isAbstract());
         ofile.name("static").value(methd.isStatic());
         ofile.name("extent").value(methd.getExtent());
-        ofile.name("modifier").value(
-                methd.isPublic() ? "public" : (methd.isProtected() ? "protected" : "private"));
+        ofile.name("modifier").value(getModifier(methd));
 
         List<String> comments = getJavadoc(methd, unit);
-        writeMethodComments(ofile, methd, unit, comments);
+        writeComments(ofile, comments);
 
         ofile.name("parameters").beginArray();
         for (IParameter prm : methd.getParameters()) {
@@ -338,10 +336,12 @@ public class JsonDocumentation extends PCT {
             switch (prm.getParameterType()) {
                 case TABLE :
                 case BUFFER_TEMP_TABLE :
-                    ofile.name("type").value("TABLE");
+                    ofile.name("type").value(
+                            "TABLE" + (prm.getABLDataType() == DataType.HANDLE ? "-HANDLE" : ""));
                     break;
                 case DATASET :
-                    ofile.name("type").value("DATASET");
+                    ofile.name("type").value(
+                            "DATASET" + (prm.getABLDataType() == DataType.HANDLE ? "-HANDLE" : ""));
                     break;
                 case BROWSE :
                     ofile.name("type").value("BROWSE");
@@ -355,26 +355,20 @@ public class JsonDocumentation extends PCT {
         ofile.endObject();
     }
 
-    private void writeClassComments(JsonWriter ofile, ITypeInfo info, ParseUnit unit,
-            List<String> comments) throws IOException {
-        ofile.name("comments").beginArray();
-        for (String str : comments) {
-            ofile.value(str);
-        }
-        ofile.endArray();
+    private String getModifier(IAccessibleElement elem) {
+        if (elem.isPublic())
+            return "public";
+        else if (elem.isPackageProtected())
+            return "package-protected";
+        else if (elem.isProtected())
+            return "protected";
+        else if (elem.isPackagePrivate())
+            return "private";
+        else
+            return "private";
     }
 
-    private void writeMethodComments(JsonWriter ofile, IMethodElement info, ParseUnit unit,
-            List<String> comments) throws IOException {
-        ofile.name("comments").beginArray();
-        for (String str : comments) {
-            ofile.value(str);
-        }
-        ofile.endArray();
-    }
-
-    private void writePropertyComments(JsonWriter ofile, IPropertyElement info,
-            ParseUnit unit, List<String> comments) throws IOException {
+    private void writeComments(JsonWriter ofile, List<String> comments) throws IOException {
         ofile.name("comments").beginArray();
         for (String str : comments) {
             ofile.value(str);
@@ -431,7 +425,7 @@ public class JsonDocumentation extends PCT {
             }
             stmt = stmt.getPreviousNode();
         }
-        
+
         return convertJavadoc(comments);
     }
 
@@ -449,10 +443,11 @@ public class JsonDocumentation extends PCT {
             for (String s : Splitter.on('\n').split(comment.trim())) {
                 // First line and last line is not supposed to contain anything
                 if (!checkStartComment(s.trim()) && !s.endsWith("*/")) {
-                    // Trim first * 
+                    // Trim first *
                     if (s.trim().startsWith("*"))
                         rslt.add(s.trim().substring(1).trim());
-                        else rslt.add(s.trim());
+                    else
+                        rslt.add(s.trim());
                 }
             }
         }
@@ -530,7 +525,6 @@ public class JsonDocumentation extends PCT {
         } catch (IOException caught) {
             throw new BuildException(caught);
         }
-        log("Dump file :" + outFile.getAbsolutePath());
         PCTDumpSchema run = new PCTDumpSchema();
         run.bindToOwner(this);
         run.setDlcHome(getDlcHome());
