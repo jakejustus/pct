@@ -95,7 +95,7 @@ pipeline {
               if ('master' == env.BRANCH_NAME) {
                 sh "sonar-scanner -Dsonar.oe.dlc=${dlc} -Dsonar.branch.name=$BRANCH_NAME"
               } else {
-                sh "sonar-scanner -Dsonar.oe.dlc=${dlc} -Dsonar.pullrequest.branch=$BRANCH_NAME -Dsonar.pullrequest.base=master"
+                sh "sonar-scanner -Dsonar.oe.dlc=${dlc} -Dsonar.pullrequest.branch=$BRANCH_NAME -Dsonar.pullrequest.base=master -Dsonar.pullrequest.key=1"
               }
             }
           }
