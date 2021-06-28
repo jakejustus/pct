@@ -41,20 +41,20 @@ public class ABLDuckTest extends BuildFileTestNg {
     private static final String FILENAME = "ABLDuck/test/docs/data.js";
     private Gson gson = new Gson();
 
-    @Test(groups = {"v11"})
+    @Test(groups = {"v11"}, enabled = false)
     public void testGenerateDocs() {
         configureProject("ABLDuck/test/build.xml");
         executeTarget("test");
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"testGenerateDocs"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"testGenerateDocs"}, enabled = false)
     public void checkDataFile() {
         // Does the data js file exist
         File f1 = new File(FILENAME);
         assertTrue(f1.exists());
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"checkDataFile"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"checkDataFile"}, enabled = false)
     public void checkClassCount() throws IOException {
         String content = new String(Files.readAllBytes(Paths.get(FILENAME)));
         content = content.substring(15, content.length() - 1);
@@ -63,7 +63,7 @@ public class ABLDuckTest extends BuildFileTestNg {
         assertEquals(data.classes.size(), 2);
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"checkDataFile"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"checkDataFile"}, enabled = false)
     public void checkProcedureCount() throws IOException {
         String content = new String(Files.readAllBytes(Paths.get(FILENAME)));
         content = content.substring(15, content.length() - 1);
@@ -72,7 +72,7 @@ public class ABLDuckTest extends BuildFileTestNg {
         assertEquals(data.procedures.size(), 1);
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"checkDataFile"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"checkDataFile"}, enabled = false)
     public void checkSearchCount() throws IOException {
         String content = new String(Files.readAllBytes(Paths.get(FILENAME)));
         content = content.substring(15, content.length() - 1);
@@ -81,28 +81,28 @@ public class ABLDuckTest extends BuildFileTestNg {
         assertEquals(data.search.size(), 14);
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"testGenerateDocs"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"testGenerateDocs"}, enabled = false)
     public void checkBaseClassCreated() {
         String filename = "ABLDuck/test/docs/output/classes/base.class.js";
         File f1 = new File(filename);
         assertTrue(f1.exists());
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"testGenerateDocs"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"testGenerateDocs"}, enabled = false)
     public void checkTestClassCreated() {
         String filename = "ABLDuck/test/docs/output/classes/test.js";
         File f1 = new File(filename);
         assertTrue(f1.exists());
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"testGenerateDocs"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"testGenerateDocs"}, enabled = false)
     public void checkTestProcedureCreated() {
         String filename = "ABLDuck/test/docs/output/procedures/test_p.js";
         File f1 = new File(filename);
         assertTrue(f1.exists());
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"checkBaseClassCreated"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"checkBaseClassCreated"}, enabled = false)
     public void checkBaseClassMetadata() throws IOException {
         String filename = "ABLDuck/test/docs/output/classes/base.class.js";
 
@@ -120,7 +120,7 @@ public class ABLDuckTest extends BuildFileTestNg {
         assertEquals(js.superclasses.size(), 1);
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"checkTestClassCreated"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"checkTestClassCreated"}, enabled = false)
     public void checkTestClassMetadata() throws IOException {
         String filename = "ABLDuck/test/docs/output/classes/test.js";
 
@@ -137,7 +137,7 @@ public class ABLDuckTest extends BuildFileTestNg {
         assertEquals(js.superclasses.size(), 2);
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"checkTestProcedureCreated"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"checkTestProcedureCreated"}, enabled = false)
     public void checkTestProcedureMetadata() throws IOException {
         String filename = "ABLDuck/test/docs/output/procedures/test_p.js";
 
@@ -153,13 +153,13 @@ public class ABLDuckTest extends BuildFileTestNg {
         assertEquals(js.meta.isDeprecated.version, "1.0.0");
     }
 
-    @Test(groups = {"v11"})
+    @Test(groups = {"v11"}, enabled = false)
     public void test2GenerateDocs() {
         configureProject("ABLDuck/test2/build.xml");
         executeTarget("test2");
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"}, enabled = false)
     public void check2HierarchyMetadata() throws IOException {
         String filename = "ABLDuck/test2/docs/output/classes/hierarchy.Father.js";
 
@@ -192,7 +192,7 @@ public class ABLDuckTest extends BuildFileTestNg {
         assertEquals(js.implementers.get(0), "hierarchy.Son");
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"}, enabled = false)
     public void check2HeaderMetadata() throws IOException {
         String filename = "ABLDuck/test2/docs/output/classes/header.ClassHeader1.js";
 
@@ -274,7 +274,7 @@ public class ABLDuckTest extends BuildFileTestNg {
         assertEquals(js.parameters.get(1).name, "pParam2");
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"}, enabled = false)
     public void check2EnumMetadata() throws IOException {
         String filename = "ABLDuck/test2/docs/output/classes/header.EnumHeader1.js";
 
@@ -291,7 +291,7 @@ public class ABLDuckTest extends BuildFileTestNg {
         assertEquals(js.members.get(3).definition, "LukeSkywalker = Padme, AnakinSkywalker");
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"}, enabled = false)
     public void check2StaticMetadata() throws IOException {
         String filename = "ABLDuck/test2/docs/output/classes/other.StaticCommentClass.js";
 
@@ -311,7 +311,7 @@ public class ABLDuckTest extends BuildFileTestNg {
         assertEquals(js.members.get(6).meta.isStatic, Boolean.TRUE);
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"}, enabled = false)
     public void check2TempTableMetadata() throws IOException {
         String filename = "ABLDuck/test2/docs/output/classes/other.TempTableComment.js";
 
@@ -325,7 +325,7 @@ public class ABLDuckTest extends BuildFileTestNg {
                 "DEFINE TEMP-TABLE ttSample2 NO-UNDO <br>&nbsp;&nbsp;&nbsp;&nbsp;  FIELD champ1 AS CHARACTER<br>&nbsp;&nbsp;&nbsp;&nbsp;  FIELD champ2 AS CHARACTER EXTENT 2<br>&nbsp;&nbsp;&nbsp;&nbsp;  FIELD champ3 AS CHARACTER FORMAT X(3)<br>&nbsp;&nbsp;&nbsp;&nbsp;  FIELD champ4 AS CHARACTER EXTENT 4 FORMAT X(3)<br>&nbsp;&nbsp;&nbsp;&nbsp;  INDEX i1 PRIMARY UNIQUE champ1<br>&nbsp;&nbsp;&nbsp;&nbsp;");
     }
 
-    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"})
+    @Test(groups = {"v11"}, dependsOnMethods = {"test2GenerateDocs"}, enabled = false)
     public void check2PropertyMetadata() throws IOException {
         String filename = "ABLDuck/test2/docs/output/classes/other.PropertyComment.js";
 

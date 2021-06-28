@@ -45,7 +45,7 @@ import org.xml.sax.SAXException;
 public class ClassDocumentationTest extends BuildFileTestNg {
     private final XPath xpath = XPathFactory.newInstance().newXPath();
 
-    @Test(groups= {"win", "v11"})
+    @Test(groups= {"win", "v11"}, enabled = false)
     public void test1() throws XPathExpressionException {
         configureProject("ClassDocumentation/test1/build.xml");
         executeTarget("test");
@@ -71,7 +71,7 @@ public class ClassDocumentationTest extends BuildFileTestNg {
         // assertEquals(xpath.evaluate("//unit/temp-table[@name='tt3']/field[@name='fld5']/@like", inputSource), "tt1.fld1");
     }
 
-    @Test(groups= {"v11"})
+    @Test(groups= {"v11"}, enabled = false)
     public void test2() {
         configureProject("ClassDocumentation/test2/build.xml");
         executeTarget("test");
@@ -90,13 +90,13 @@ public class ClassDocumentationTest extends BuildFileTestNg {
         assertTrue(f6.exists());
     }
 
-    @Test(groups= {"win", "v11"})
+    @Test(groups= {"win", "v11"}, enabled = false)
     public void test3() {
         configureProject("ClassDocumentation/test3/build.xml");
         executeTarget("test");
     }
 
-    @Test(groups= {"win", "v11"})
+    @Test(groups= {"win", "v11"}, enabled = false)
     public void test4() {
         configureProject("ClassDocumentation/test4/build.xml");
         executeTarget("test");
@@ -107,7 +107,7 @@ public class ClassDocumentationTest extends BuildFileTestNg {
         assertTrue(f2.exists());
     }
 
-    @Test(groups= {"win", "v11"})
+    @Test(groups= {"win", "v11"}, enabled = false)
     public void test5() {
         configureProject("ClassDocumentation/test5/build.xml");
         executeTarget("test");
@@ -118,7 +118,7 @@ public class ClassDocumentationTest extends BuildFileTestNg {
         assertTrue(f2.exists());
     }
 
-    @Test(groups= {"win", "v11"})
+    @Test(groups= {"win", "v11"}, enabled = false)
     public void test6() throws XPathExpressionException, IOException, SAXException, ParserConfigurationException {
         configureProject("ClassDocumentation/test6/build.xml");
         executeTarget("test");
