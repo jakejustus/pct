@@ -18,8 +18,8 @@
 /* Callbacks are only supported on 11.3+ */
  &IF DECIMAL(SUBSTRING(PROVERSION, 1, INDEX(PROVERSION, '.') + 1)) GE 11.3 &THEN
  USING Progress.Lang.Class.
- &ENDIF
  USING Progress.Json.ObjectModel.*.
+ &ENDIF
 
 &IF INTEGER(SUBSTRING(PROVERSION, 1, INDEX(PROVERSION, '.'))) GE 11 &THEN
   { pct/v11/xrefd0005.i}
@@ -143,6 +143,8 @@ DEFINE VARIABLE cLastIncludeName AS CHARACTER NO-UNDO.
 DEFINE VARIABLE lOutputJson    AS LOGICAL NO-UNDO INITIAL FALSE.
 DEFINE VARIABLE lOutputConsole AS LOGICAL NO-UNDO INITIAL FALSE.
 
+DEFINE VARIABLE cTempOutput AS CHARACTER NO-UNDO.
+
 /* Handle to calling procedure in order to log messages */
 DEFINE VARIABLE hSrcProc AS HANDLE NO-UNDO.
 ASSIGN hSrcProc = SOURCE-PROCEDURE.
@@ -157,7 +159,7 @@ ASSIGN majorMinor = DECIMAL(REPLACE(SUBSTRING(PROVERSION, 1, INDEX(PROVERSION, '
 ASSIGN bAboveEq113 = (majorMinor GE 11.3).
 ASSIGN bAboveEq117 = (majorMinor GE 11.7).
 &IF DECIMAL(SUBSTRING(PROVERSION, 1, INDEX(PROVERSION, '.') + 1)) GE 11 &THEN
-// PROVERSION(1) available since v11
+/* PROVERSION(1) available since v11 */
 ASSIGN bAboveEq1173 = (majorMinor GT 11.7) OR ((majorMinor EQ 11.7) AND (INTEGER(ENTRY(3, PROVERSION(1), '.')) GE 3)). /* FIXME Check exact version number */
 &ENDIF
 ASSIGN bAboveEq12 = (majorMinor GE 12).
@@ -174,7 +176,7 @@ PROCEDURE setOption.
   DEFINE INPUT PARAMETER ipValue AS CHARACTER NO-UNDO.
 
   CASE ipName:
-    when 'OUTPUTDIR':U        THEN ASSIGN DestDir = ipValue.
+    WHEN 'OUTPUTDIR':U        THEN ASSIGN DestDir = ipValue.
     WHEN 'PCTDIR':U           THEN ASSIGN PCTDir = ipValue.
     WHEN 'FORCECOMPILE':U     THEN ASSIGN ForceComp = (ipValue EQ '1':U).
     WHEN 'XCODE':U            THEN ASSIGN lXCode = (ipValue EQ '1':U).
@@ -204,6 +206,8 @@ PROCEDURE setOption.
     WHEN 'CALLBACKCLASS':U    THEN ASSIGN callbackClass = ipValue.
     WHEN 'OUTPUTTYPE':U       THEN ASSIGN outputType = ipValue.
 
+    WHEN 'TEMPOUTPUT':U       THEN ASSIGN cTempOutput = ipValue.
+    
     OTHERWISE RUN logError IN hSrcProc (SUBSTITUTE("Unknown parameter '&1' with value '&2'" ,ipName, ipValue)).
   END CASE.
 
@@ -320,6 +324,8 @@ PROCEDURE compileXref.
   DEFINE VARIABLE lWarnings AS LOGICAL NO-UNDO INITIAL FALSE.
   DEFINE VARIABLE lOneWarning AS LOGICAL NO-UNDO INITIAL FALSE.
 
+  DEFINE VARIABLE vOutputTempDir AS CHARACTER NO-UNDO.
+
   EMPTY TEMP-TABLE ttWarnings. /* Emptying the temp-table to store warnings for current file*/
   /* Output progress */
   IF ProgPerc GT 0 THEN DO:
@@ -346,15 +352,19 @@ PROCEDURE compileXref.
 
   RUN adecomm/_osprefx.p(INPUT ipInFile, OUTPUT cBase, OUTPUT cFile).
   RUN adecomm/_osfext.p(INPUT cFile, OUTPUT cFileExt).
-  ASSIGN opError = NOT createDir(outputDir, cBase).
+
+  /* Compile in temp OutputDir if defined */
+  vOutputTempDir = IF cTempOutput > "" AND LC(cFileExt) = ".cls" THEN cTempOutput ELSE OutputDir. 
+
+  ASSIGN opError = NOT createDir(vOutputTempDir, cBase).
   IF (opError) THEN RETURN.
   ASSIGN opError = NOT createDir(PCTDir, cBase).
   IF (opError) THEN RETURN.
   ASSIGN cSaveDir = (IF DestDir EQ ?
                        THEN ?
                        ELSE (IF cFileExt = ".cls":U OR lRelative
-                               THEN outputDir
-                               ELSE outputDir + '/':U + cBase)).
+                               THEN vOutputTempDir
+                               ELSE vOutputTempDir + '/':U + cBase)).
 
   IF (ipOutFile EQ ?) OR (ipOutFile EQ '') THEN DO:
     ASSIGN ipOutFile = SUBSTRING(ipInFile, 1, R-INDEX(ipInFile, cFileExt) - 1) + '.r':U.
@@ -483,8 +493,8 @@ PROCEDURE compileXref.
     /* In order to handle <mapper> element */
     IF ((cRenameFrom NE '') AND (cRenameFrom NE ipOutFile)) THEN DO:
       RUN logVerbose IN hSrcProc (SUBSTITUTE("Mapper: renaming &1/&2 to &1/&3", outputDir, cRenameFrom, ipOutFile)).
-      OS-COPY VALUE(outputDir + '/' + cRenameFrom) VALUE(outputDir + '/' + ipOutFile).
-      OS-DELETE VALUE(outputDir + '/' + cRenameFrom).
+      OS-COPY VALUE(vOutputTempDir + '/' + cRenameFrom) VALUE(vOutputTempDir + '/' + ipOutFile).
+      OS-DELETE VALUE(vOutputTempDir + '/' + cRenameFrom).
     END.
     IF (NOT noParse) AND (NOT lXCode) THEN DO:
       IF lXmlXref THEN

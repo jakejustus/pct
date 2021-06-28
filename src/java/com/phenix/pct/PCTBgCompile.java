@@ -19,6 +19,9 @@ package com.phenix.pct;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,10 +45,10 @@ import org.apache.tools.ant.util.FileUtils;
  * @author <a href="mailto:g.querret+PCT@gmail.com">Gilles QUERRET </a>
  */
 public class PCTBgCompile extends PCTBgRun {
-    private CompilationAttributes compAttrs;
+    protected CompilationAttributes compAttrs;
     private Mapper mapperElement;
 
-    private SortedSet<CompilationUnit> units = new TreeSet<>();
+    protected SortedSet<CompilationUnit> units = new TreeSet<>();
 
     private int compOk = 0;
     private int compNotOk = 0;
@@ -247,15 +250,15 @@ public class PCTBgCompile extends PCTBgRun {
     @Override
     protected void cleanup() {
         super.cleanup();
-
+        
         if (getOptions().isDebugPCT())
             return;
         deleteFile(compDir);
     }
 
     public class CompilationBackgroundWorker extends BackgroundWorker {
-        private int customStatus = 0;
-
+        protected int customStatus = 0;
+        
         public CompilationBackgroundWorker(PCTBgCompile parent) {
             super(parent);
         }
@@ -288,6 +291,7 @@ public class PCTBgCompile extends PCTBgRun {
                         noMoreFiles = true;
                     }
                 }
+                
                 StringBuilder sb = new StringBuilder();
                 if (noMoreFiles) {
                     return false;
@@ -305,13 +309,14 @@ public class PCTBgCompile extends PCTBgRun {
                 return false;
             }
         }
-
+    
         @Override
         public void setCustomOptions(Map<String, String> options) {
             // No-op
         }
 
-        private String getOptions() {
+        protected String getOptions() {
+
             StringBuilder sb = new StringBuilder();
             sb.append(Boolean.toString(compAttrs.isRunList())).append(';');
             sb.append("").append(';'); // Previously min-size
@@ -382,11 +387,39 @@ public class PCTBgCompile extends PCTBgRun {
         }
     }
 
-    private static class CompilationUnit implements Comparable<CompilationUnit> {
+    static class CompilationUnit implements Comparable<CompilationUnit> {
         private int id;
         private String fsRootDir; // Fileset root directory
         private String fsFile;    // Fileset relative file name
         private String targetFile;
+        
+        public String getFsFile() {
+            return fsFile;
+        }
+
+        public String getTargetFile() {
+            return targetFile;
+        }
+        
+        /**
+         * Return the name of the rcode
+         * @return
+         */
+        public String getRcodeFile(){
+            if (getTargetFile() != null) {
+                return getTargetFile();
+            }
+            else {
+                String src = getFsFile();
+                int index = src.lastIndexOf('.');
+                return src.substring(0, index > 0 ? index : src.length()) + ".r";
+            }
+        }
+        
+        public boolean isClass () {
+            return fsFile.toLowerCase().endsWith(".cls");
+        }
+
 
         @Override
         public int hashCode() {

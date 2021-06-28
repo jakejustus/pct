@@ -48,7 +48,9 @@ public class CompilationWrapper extends PCT implements IRunAttributes, ICompilat
                 || "pct:compile_ext"
                         .equalsIgnoreCase(getRuntimeConfigurableWrapper().getElementTag())
                 || (numThreads > 1) || (mapperElement != null)) {
-            pctTask = new PCTBgCompile();
+            
+            // Compile in temp directory
+            pctTask = new PCTBgCompileClass(); // PCTBgCompile
             ((PCTBgCompile) pctTask).setRunAttributes(runAttributes);
             ((PCTBgCompile) pctTask).setCompilationAttributes(compAttributes);
             ((PCTBgCompile) pctTask).setMapper(mapperElement);

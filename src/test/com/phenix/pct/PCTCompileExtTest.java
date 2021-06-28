@@ -333,7 +333,8 @@ public class PCTCompileExtTest extends BuildFileTestNg {
         File f5 = new File(BASEDIR + "test22/build2/Y.r");
         assertTrue(f5.exists());
         File f6 = new File(BASEDIR + "test22/build2/X.r");
-        assertTrue(f6.exists());
+        /* Comment because compilation in tempdir avoid this 
+        assertTrue(f6.exists());*/
     }
 
     @Test(groups = {"v11", "win"})

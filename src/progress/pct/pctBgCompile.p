@@ -63,6 +63,8 @@ PROCEDURE setOptions:
     RUN setOption IN hComp ('OUTPUTTYPE', ENTRY(36, ipPrm, ';')).
     RUN setOption IN hComp ('RETURNVALUES', IF ENTRY(37, ipPrm, ';') EQ 'true' THEN '1' ELSE '0').
 
+    RUN setOption IN hComp ('TEMPOUTPUT', ENTRY(38, ipPrm, ';')).
+    
     RUN initModule IN hComp.
 
     ASSIGN opOk = TRUE.
